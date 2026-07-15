@@ -246,5 +246,4 @@ against all three planted incidents before and after the change).
 > (comparing each event against a user's own history) to detect credential
 > compromise, impossible-travel, and dormant-account-reactivation patterns.
 > Diagnosed and resolved an O(n²) performance bottleneck via `EXPLAIN ANALYZE`,
-> rewriting correlated subqueries as window functions for a ~133x speedup.#   C i p h e r  
- 
+> rewriting correlated subqueries as window functions for a ~133x speedup.
