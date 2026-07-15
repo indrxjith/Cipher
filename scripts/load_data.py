@@ -9,7 +9,7 @@ from urllib.parse import quote_plus
 
 # ---- FILL THIS IN ----
 DB_USER = "postgres"
-DB_PASSWORD = "@Ilikemusic123"   # <-- confirm this is your exact password
+DB_PASSWORD = "*********"   # <-- confirm this is your exact password
 DB_HOST = "localhost"
 DB_PORT = "5432"
 DB_NAME = "cipher_db"
