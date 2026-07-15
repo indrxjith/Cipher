@@ -1,0 +1,11 @@
+application_id,app_name,sensitivity_level
+1,EmailSuite,low
+2,Intranet,low
+3,HR_Portal,medium
+4,Payroll_System,high
+5,CRM,medium
+6,Finance_Ledger,high
+7,SourceCode_Repo,high
+8,Admin_Console,high
+9,VPN_Gateway,medium
+10,Shared_Drive,low

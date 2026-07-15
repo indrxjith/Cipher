@@ -1,0 +1,13 @@
+location_id,city,country,latitude,longitude
+1,New York,USA,40.7128,-74.006
+2,Chicago,USA,41.8781,-87.6298
+3,San Francisco,USA,37.7749,-122.4194
+4,London,UK,51.5074,-0.1278
+5,Berlin,Germany,52.52,13.405
+6,Toronto,Canada,43.6532,-79.3832
+7,Singapore,Singapore,1.3521,103.8198
+8,Sydney,Australia,-33.8688,151.2093
+9,Mumbai,India,19.076,72.8777
+10,Tokyo,Japan,35.6762,139.6503
+11,Sao Paulo,Brazil,-23.5505,-46.6333
+12,Dubai,UAE,25.2048,55.2708
