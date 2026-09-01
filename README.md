@@ -39,15 +39,34 @@ CSV Generation (Python) → PostgreSQL Warehouse → Scoring View → Priority Q
 ```
 cipher/
 ├── sql/
-│   ├── 01_create_warehouse.sql   -- schema + indexes
-│   ├── 02_scoring_engine.sql     -- the composite risk-scoring view
-│   └── 03_priority_queue.sql     -- top-20 ranked output with reasons
+│   ├── 01_create_warehouse.sql     -- schema + indexes
+│   ├── 02_scoring_engine.sql       -- the composite risk-scoring view
+│   ├── 03_priority_queue.sql       -- top-20 ranked output with reasons
+│   └── 04_materialized_view.sql    -- precomputed daily behavioral baseline
 ├── scripts/
-│   ├── generate_data.py          -- synthetic data + 3 planted incidents
-│   └── load_data.py              -- loads CSVs into Postgres
-├── data/                         -- generated CSVs
+│   ├── generate_data.py            -- synthetic data + 3 planted incidents
+│   └── load_data.py                -- loads CSVs into Postgres
+├── data/                           -- generated CSVs
+├── .env.example                    -- template for local DB credentials
+├── requirements.txt
 └── README.md
 ```
+
+---
+
+## Setup
+
+```bash
+pip install -r requirements.txt
+cp .env.example .env      # then fill in your real DB credentials
+python scripts/generate_data.py
+python scripts/load_data.py
+```
+
+Then run the SQL files in order against `cipher_db` (`01` → `02` → `03` → `04`).
+
+Database credentials are read from a local `.env` file (gitignored) rather
+than hardcoded in the scripts, so nothing sensitive ever gets committed.
 
 ---
 
@@ -218,14 +237,26 @@ against all three planted incidents before and after the change).
 
 ---
 
+## Scaling Further: Precomputed Daily Behavioral Baseline
+
+`risk_scores` (Layer 2) still recomputes each user's full device/location
+history via window functions over the *entire* fact table on every query —
+fine at 7,140 rows, but it doesn't scale, since every new login re-scans all
+historical logins for every user.
+
+`sql/04_materialized_view.sql` addresses this with `mv_daily_user_behavior`,
+a materialized view that precomputes, per user per day, the devices and
+locations already known as of that day, plus running login/failure counts.
+In production this would be refreshed on a schedule (e.g. nightly, or
+incrementally after each batch load) via `REFRESH MATERIALIZED VIEW`, rather
+than recomputed from scratch on every read.
+
+---
+
 ## What I'd Add With More Time
 
 *(Explicitly scoped as future work — not implied to be done.)*
 
-- A materialized view (`mv_daily_user_behavior`) precomputing each user's
-  daily baseline (typical devices, locations, login hours), refreshed on a
-  schedule, so the scoring view doesn't recompute behavioral aggregates on
-  every query — useful at much larger scale than this dataset.
 - Per-user location whitelisting to resolve the dual-home-location false
   positive noted above.
 - A feedback loop where an analyst's true-positive/false-positive
@@ -240,11 +271,10 @@ against all three planted incidents before and after the change).
 ## Resume Summary
 
 > **CIPHER — Behavioral Risk-Scoring Engine**
-> Designed a PostgreSQL-based composite risk-scoring system that converts
-> authentication events into ranked, explainable risk assessments — combining
-> static rule-based scoring with behavioral SQL window-function analysis
-> (comparing each event against a user's own history) to detect credential
-> compromise, impossible-travel, and dormant-account-reactivation patterns.
-> Diagnosed and resolved an O(n²) performance bottleneck via `EXPLAIN ANALYZE`,
-> rewriting correlated subqueries as window functions for a ~133x speedup.#   C i p h e r  
- 
+> Built a PostgreSQL-based risk-scoring engine that converts authentication
+> events into ranked, explainable alerts — combining static rules with
+> behavioral SQL window-function analysis (comparing each login against a
+> user's own history) to detect credential compromise, impossible travel, and
+> dormant-account reactivation. Diagnosed an O(n²) bottleneck via
+> `EXPLAIN ANALYZE` and rewrote it using window functions for a ~133x
+> speedup (65.4s → 0.49s).
